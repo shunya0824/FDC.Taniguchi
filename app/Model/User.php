@@ -1,5 +1,7 @@
 <?php
 App::uses('AppModel', 'Model');
+App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
+
 /**
  * User Model
  *
@@ -62,7 +64,8 @@ class User extends AppModel {
         'password' => array(
             'required' => array(
                 'rule' => array('notBlank'),
-                'message' => 'Password is required'
+                'message' => 'Password is required',
+                'on' => 'create',
             )
         ),
         'confirm_password' => array(
@@ -101,4 +104,24 @@ class User extends AppModel {
         }
         return false;
     }
+
+    
+    
+
+    public function beforeSave($options = array()) {
+        // 新しいパスワードが入力されているか確認
+        if (isset($this->data[$this->alias]['new_password']) && !empty($this->data[$this->alias]['new_password'])) {
+            // 新しいパスワードをハッシュ化してセット
+            $passwordHasher = new SimplePasswordHasher();
+            $this->data[$this->alias]['password'] = $passwordHasher->hash($this->data[$this->alias]['new_password']);
+        } else {
+            // パスワードの更新を無視（既存のパスワードをそのまま使用）
+            if(isset($this->data[$this->alias]['password'])) {
+                unset($this->data[$this->alias]['password']);
+            }
+        }
+        return true;
+        
+    }
+
 }
