@@ -1,0 +1,37 @@
+.user-profile {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column; /* This ensures that the profile header and details are stacked vertically */
+    align-items: flex-start;
+}
+
+.user-profile-header {
+    display: flex;
+    align-items: flex-start; /* Adjusted to flex-start to align items at their start */
+    margin-bottom: 20px;
+}
+
+.user-photo {
+    width: 150px; /* Adjust the size as needed */
+    height: 150px; /* Adjust the size as needed */
+    margin-right: 20px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.user-details h3, .user-details p, .user-hobby {
+    margin: 5px 0;
+}
+
+.user-details strong {
+    color: #333;
+}
+
+.user-hobby {
+    margin-top: 20px;
+    white-space: pre-wrap; /* Keeps the formatting of the hobby text */
+}

@@ -30,7 +30,7 @@ echo $this->Form->input('gender', array(
 echo $this->Form->input('hobby');
 
 // 現在のパスワード確認フィールド (プロファイル更新の場合)
-echo $this->Form->input('current_password', array('type' => 'password', 'label' => 'Current Password', 'required' => true));
+
 
 echo $this->Form->end('Update');
 ?>

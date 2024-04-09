@@ -20,6 +20,15 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 <!DOCTYPE html>
 <html>
 <head>
+	<?php
+	echo $this->Html->script('https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js');
+	echo $this->Html->script('message_form');
+	?>
+	<?php echo $this->Html->script('https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'); ?>
+	<?php echo $this->Html->css('https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css'); ?>
+
+
+
 	<?php echo $this->Html->charset(); ?>
 	<title>
 		<?php echo $cakeDescription ?>:
@@ -60,4 +69,35 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 		</div>
 	</div>
 </body>
+
+
+
+<!-- AJAXでメッセージ削除を実行するカスタムスクリプト -->
+<script>
+$(document).ready(function() {
+    $('.delete-message').click(function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to delete this message?')) {
+            var link = $(this);
+            $.ajax({
+                url: link.attr('href'),
+                type: 'POST',
+                dataType: 'json',
+                success: function(result) {
+                    if (result.success) {
+                        link.closest('.message').fadeOut('slow', function() {
+                            $(this).remove();
+                        });
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+
+
+
 </html>
