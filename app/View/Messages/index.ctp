@@ -23,9 +23,22 @@
     </div>
 
     <!-- ここで "Show More" ボタンを追加 -->
+    <?php
+    // 現在のページ番号を取得、設定されていない場合は1とします
+    $currentPage = $this->request->query('page') ?? 1;
+    // 次のページ番号
+    $nextPage = $currentPage + 1;
+    ?>
+
     <?php if ($this->Paginator->hasNext()): ?>
-        <?php echo $this->Html->link('Show More', ['action' => 'index', '?' => ['page' => $this->request->query('page') + 1]], ['class' => 'show-more-button']); ?>
+        <?php echo $this->Html->link('Show More', '#', [
+            'class' => 'show-more-button',
+            'data-page' => $nextPage
+        ]); ?>
     <?php endif; ?>
+
+
+
 </div>
 
 

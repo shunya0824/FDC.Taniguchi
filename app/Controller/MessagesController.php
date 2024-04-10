@@ -25,6 +25,11 @@ class MessagesController extends AppController {
         ];
         $messages = $this->Paginator->paginate('Message');
         $this->set(compact('messages', 'currentUserId'));
+
+        if ($this->request->is('ajax')) {
+            $this->layout = 'ajax';
+            $this->render('/Elements/messages_list');
+        }
     }
 
 

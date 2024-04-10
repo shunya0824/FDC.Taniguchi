@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    
+
     $('.new-message-btn').click(function() {
         $('#newMessageForm').toggle();
     });
@@ -47,21 +49,23 @@ $(document).ready(function() {
 
     $('.show-more-button').on('click', function(e) {
         e.preventDefault();
-        var page = $(this).data('page'); // 次のページ番号を取得
-
+        var page = $(this).data('page');
+    
         $.ajax({
-            url: '/messages/index?page=' + page,
+            url: '/messageboard/messages/index?page=' + page,
             type: 'GET',
             success: function(response) {
-                // 成功時にメッセージリストに追加
-                $('.message-list').append(response);
-
-                // 必要に応じて"Show More"ボタンの更新または削除を行う
+                // 成功時の処理...
+                $('.message-list').append(response); // ボタンのdata-pageを更新
+                $('.show-more-button').data('page', page + 1);
             },
-            error: function() {
-                alert('Messages could not be loaded.');
+            error:function(){
+                alert('error');
             }
         });
     });
+    
+
+    
 });
 
