@@ -22,8 +22,16 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 <head>
 	<?php
 	echo $this->Html->script('https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js');
-	echo $this->Html->script('message_form');
+
+
+	if ($this->request->params['action'] == 'index') {
+		echo $this->Html->script('index');
+	} elseif ($this->request->params['action'] == 'messageDetails') {
+		echo $this->Html->script('messageDetails');
+	}
 	?>
+
+	
 	<?php echo $this->Html->script('https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js'); ?>
 	<?php echo $this->Html->css('https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css'); ?>
 

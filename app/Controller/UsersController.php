@@ -176,7 +176,7 @@ class UsersController extends AppController {
             ],
             'fields' => ['User.id', 'User.username'],
         ]);
-        CakeLog::write('debug', 'ユーザー検索結果: ' . print_r($users, true));
+      
 
     
         $result = array_map(function ($user) {
