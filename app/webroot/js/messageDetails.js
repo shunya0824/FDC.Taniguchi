@@ -1,85 +1,63 @@
 $(document).ready(function() {
-    var conversationId = $('#conversationId').val(); // Assume an input holding the conversation ID
-    
-    // Function to load messages for the conversation
+    // Correctly set conversationId based on your HTML structure.
+    var conversationId = "<?php echo $conversationId; ?>"; // Adjust based on how you're setting this variable in your PHP.
+
     function loadMessages(page) {
         $.ajax({
-            url: `/messages/messageDetails/${conversationId}?page=${page}`,
+            url: '/messageboard/messages/messageDetails/' + conversationId + '?page=' + page,
             type: 'GET',
             success: function(response) {
-                if (page === 1) {
-                    $('#messagesContainer').html(response);
-                } else {
-                    $('#messagesContainer').append(response);
-                }
-                // Update pagination data
-                var nextPage = parseInt(page, 10) + 1;
-                $('#showMoreBtn').data('page', nextPage);
-            },
-            error: function() {
-                alert('Failed to load messages.');
+                $('#messages').append(response);
+                $('#showMoreMessages').data('next-page', page + 1);
             }
         });
     }
 
-    // Initial load of messages
-    loadMessages(1);
+    $('#showMoreMessages').click(function(e) {
+        e.preventDefault();
+        var nextPage = $(this).data('next-page');
+        loadMessages(nextPage);
+    });
 
-    // Reply to the conversation
     $('#replyForm').submit(function(e) {
         e.preventDefault();
         var formData = $(this).serialize();
-        
         $.ajax({
-            url: `/messages/reply/${conversationId}`,
+            url: '/messageboard/messages/reply/' + conversationId,
             type: 'POST',
             data: formData,
             dataType: 'json',
             success: function(response) {
-                if (response.status === 'success') {
-                    
-                    $('#replyForm textarea[name="message"]').val(''); 
-                    loadMessages(1); // Reload messages to include the new one
+                if (response.success) {
+
+                    $('#messages').prepend('<div class="message"><p>' + response.messageText + '</p><small>Just now</small></div>');
+                    $('#replyForm textarea[name="message_text"]').val('');
+                   
+                    // Optionally clear the form here and/or reload parts of the page
                 } else {
-                    alert('Failed to send message.');
+                    alert('Reply failed');
                 }
             },
             error: function() {
-                alert('Error replying to conversation.');
+                alert('Reply failed');
             }
         });
     });
 
-    // Show more messages (pagination)
-    $('#showMoreBtn').click(function(e) {
-        e.preventDefault();
-        var page = $(this).data('page') || 2;
-        loadMessages(page);
-    });
-
-    // Delete a message
-    $(document).on('click', '.deleteMessageBtn', function(e) {
+    $(document).on('click', '.delete', function(e) {
         e.preventDefault();
         var messageId = $(this).data('message-id');
-        if (!messageId) return;
-
-        if(confirm('Are you sure you want to delete this message?')) {
-            $.ajax({
-                url: `/messages/delete/${messageId}`,
-                type: 'POST',
-                dataType: 'json',
-                success: function(response) {
-                    if (response.status === 'success') {
-                        // Remove the message from the DOM.
-                        $(`#message_${messageId}`).fadeOut('slow', function() { $(this).remove(); });
-                    } else {
-                        alert('Failed to delete message.');
-                    }
-                },
-                error: function() {
-                    alert('Error deleting message.');
+        $.ajax({
+            url: '/messageboard/messages/delete/' + messageId,
+            type: 'POST',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    $('#message_' + messageId).remove();
+                } else {
+                    alert('Delete failed');
                 }
-            });
-        }
+            }
+        });
     });
 });

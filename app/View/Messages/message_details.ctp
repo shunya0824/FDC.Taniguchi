@@ -9,16 +9,14 @@ echo $this->Html->script('messageDetails');
     
     <!-- Reply Form -->
     <?php echo $this->Form->create('Message', ['url' => ['controller' => 'Messages', 'action' => 'reply', $conversationId]]); ?>
-        <?php echo $this->Form->textarea('message', ['placeholder' => 'Write your reply here...']); ?>
+        <?php echo $this->Form->textarea('message_text', ['placeholder' => 'Write your reply here...']); ?>
         <?php echo $this->Form->submit('Send'); ?>
     <?php echo $this->Form->end(); ?>
 </div>
 
 <div id="messages">
 
-    <?php 
-    foreach ($conversation['Message'] as $message): 
-    ?>
+    <?php foreach ($conversation['Message'] as $message): ?>
         <div class="message">
             <p><?php echo h($message['message_text']); ?></p>
             <small><?php echo h($message['created']); ?></small>
@@ -26,9 +24,14 @@ echo $this->Html->script('messageDetails');
         </div>
     <?php endforeach; ?>
     <!-- Show More Link -->
-    <?php if ($this->Paginator->hasNext()): ?>
-        <button id="showMoreMessages" data-next-page="<?php echo $this->Paginator->nextPage(); ?>">Show More</button>
+
+    <!-- Show More Link -->
+    <?php if (!empty($hasNextPage) && $hasNextPage): ?>
+        <button id="showMoreMessages" data-next-page="<?php echo $page + 1; ?>">Show More</button>
     <?php endif; ?>
+
+
+
 </div>
 
 <script>

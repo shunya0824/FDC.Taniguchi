@@ -39,41 +39,6 @@ class MessagesController extends AppController {
     }
 
 
-    // public function create() {
-    //     $this->autoRender = false; // ビューレンダリングを無効化
-    //     if ($this->request->is('post')) {
-            
-    //         $userId = $this->Auth->user('id');
-    //         $data = $this->request->data;
-
-    //         if (empty($data['Message']['conversation_id'])) {
-    //             $this->Message->Conversation->create();
-    //             $conversation = $this->Message->Conversation->save();
-    //             $data['Message']['conversation_id'] = $conversation['Conversation']['id'];
-    //         }
-
-    //         $data['Message']['sender_id'] = $userId;
-
-    //         $this->Message->create();
-    //         // MessagesControllerのcreateアクション内
-    //         if ($message = $this->Message->save($data)) {
-    //             // ここでrecipientNameを取得する
-    //             $recipientName = $this->Message->Recipient->field('username', ['id' => $data['Message']['recipient_id']]);
-                
-    //             $response = [
-    //                 'success' => true,
-    //                 'messageText' => $message['Message']['message_text'],
-    //                 'recipientName' => $recipientName // レスポンスに含める
-    //             ];
-        
-    //         } else {
-    //             $response = ['success' => false, 'message' => 'Unable to send your message.'];
-    //         }
-    //         echo json_encode($response);
-    //     }
-    // }
-    
-    
 
     public function create() {
         $this->autoRender = false; // Disable view rendering
@@ -126,46 +91,88 @@ class MessagesController extends AppController {
         return $this->redirect(array('action' => 'index'));
     }
 
-    public function messageDetails($conversationId = null) {
+        
+    public function messageDetails($conversationId = null, $page = 1) {
         $this->loadModel('Conversation');
         $currentUserId = $this->Auth->user('id');
-
+    
         if (!$this->Conversation->exists($conversationId)) {
             throw new NotFoundException(__('Invalid conversation'));
         }
+        
+        $conversation = $this->Conversation->find('first', [
+            'conditions' => ['Conversation.id' => $conversationId],
+            'contain' => ['Message' => ['Sender', 'Recipient']]
+        ]);
+        
 
-        $conversation = $this->Conversation->find('first',array(
-            'conditions' => array('Conversation.id' => $conversationId),
-            'contain' => array(
-                'Message' => array(
-                    'limit' => 10, // 10件までのメッセージを取得
-                    'order' => 'Message.created ASC',
-                    'Sender',
-                    'Recipient'
-                )
-            )
-        ));
-        if ($this->request->is('post') || $this->request->is('ajax')) {
-            $this->request->data['Message']['conversation_id'] = $conversationId;
-            $this->request->data['Message']['sender_id'] = $currentUserId;
+        $this->set(compact('conversation', 'conversationId'));
 
-            if ($this->Message->save($this->request->data)) {
-                $this->Session->setFlash(__('The message has been saved.'));
-                if ($this->request->is('ajax')) {
-                    $this->autoRender = false;
-                    echo json_encode(array('status' => 'success'));
-                    return;
+
+        $limit = 10;
+        $messages = $this->Message->find('all', [
+            'conditions' => ['Message.conversation_id' => $conversationId],
+            'limit' => $limit,
+            'page' => $page,
+            'order' => ['Message.created' => 'asc'],
+            'contain' => ['Sender', 'Recipient']
+        ]);
+
+        $count = $this->Message->find('count', ['conditions' => ['Message.conversation_id' => $conversationId]]);
+
+        $hasNextPage = ($count > $page * $limit);
+
+        $this->set(compact('messages', 'hasNextPage', 'page'));
+
+
+        
+    
+        // // Use Paginator to fetch messages
+        // $messages = $this->Paginator->paginate('Message');
+        // $this->set(compact('messages', 'conversationId'));
+    
+        // // Additional data for the view, such as conversation details
+        // $conversationDetails = $this->Conversation->find('first', [
+        //     'conditions' => ['Conversation.id' => $conversationId],
+        //     // Include any necessary associated data here
+        // ]);
+        // $this->set('conversationDetails', $conversationDetails);
+    
+        // if ($this->request->is('ajax')) {
+        //     $this->layout = 'ajax'; // Use an AJAX-specific layout if needed
+        //     $this->render('/Elements/message_list'); // Adjust this to your specific view script for AJAX responses
+        // }
+    }
+
+    public function reply($conversationId = null) {
+        $this->autoRender = false; // Disable view rendering
+        if ($this->request->is('post')) {
+            $userId = $this->Auth->user('id');
+            $data = $this->request->data;
+
+            if (isset($data['message_text'])) {
+                $messageData = [
+                    'Message' => [
+                        'message_text' => $data['message_text'],
+                        'sender_id' => $userId,
+                        'recipient_id' => $data['recipient_id'],
+                        'user_id' => $userId,
+                    ]
+                ];
+
+                $this->Message->create();
+                if($message = $this->Message->save($messageData)) {
+                    $response = [
+                        'success' => true,
+                        'messageText' => $message['Message']['message_text'],
+                        'created' => $message['Message']['created']
+                    ];
+                } else {
+                    $response = ['success' => false, 'message' => 'Unable to send your message.'];
                 }
-            } else {
-                if ($this->request->is('ajax')) {
-                    $this->autoRender = false;
-                    echo json_encode(array('status' => 'failure'));
-                    return;
-                } 
-                $this->Session->setFlash(__('The message could not be saved. Please, try again.'));
+                echo json_encode($response);
             }
         }
-        $this->set('conversation', $conversation);
-        $this->set('conversationId', $conversationId);
     }
+    
 }
